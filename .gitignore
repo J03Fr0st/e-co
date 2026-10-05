@@ -24,3 +24,6 @@ lhci-report/
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+
+# impeccable decision-page session state (transient)
+.impeccable/questions/
