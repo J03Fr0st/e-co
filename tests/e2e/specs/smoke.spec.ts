@@ -3,7 +3,8 @@ import { expect, test } from '../fixtures'
 test('the placeholder home page loads and is accessible', async ({ page, expectNoA11yViolations }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('main').getByRole('heading', { level: 1, name: 'E-co' })).toBeVisible()
+  await expect(page).toHaveTitle('Long Cycle')
+  await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeVisible()
   await expectNoA11yViolations()
 })
 

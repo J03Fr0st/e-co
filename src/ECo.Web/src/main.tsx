@@ -1,9 +1,11 @@
+import '@/styles/tokens.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '@/App'
+import { RouterProvider } from 'react-router/dom'
+import { createRouter } from '@/app/router'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <RouterProvider router={createRouter()} />
   </StrictMode>,
 )
