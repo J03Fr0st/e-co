@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text.Json;
 using ECo.Api.Infrastructure.Logging;
 using Serilog;
 using ILogger = Serilog.ILogger;
@@ -155,5 +157,41 @@ public class LoggingPipelineTests
 
         Assert.DoesNotContain("s3cr3t-value", output);
         Assert.Contains("42", output);
+    }
+
+    [Fact]
+    public void Every_output_line_stays_valid_json_and_trace_ids_are_untouched()
+    {
+        // A digit-heavy trace id: before redaction moved ahead of encoding, the card pattern could cut into it.
+        using var activity = new Activity("test")
+            .SetParentId(
+                ActivityTraceId.CreateFromString("12345678901234567890123456789012"),
+                ActivitySpanId.CreateFromString("1234567890123456"))
+            .Start();
+
+        var output = LogWithAppPipeline(log => log.Error(
+            new InvalidOperationException("first line\njoe@example.com\tsecond"),
+            "Save failed for joe@example.com\nwith 4242 4242 4242 4242"));
+
+        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Assert.NotEmpty(lines);
+        foreach (var line in lines)
+        {
+            using var json = JsonDocument.Parse(line);
+            Assert.Equal(activity.TraceId.ToHexString(), json.RootElement.GetProperty("@tr").GetString());
+            Assert.DoesNotContain("joe@example.com", line);
+            Assert.DoesNotContain("4242 4242 4242 4242", line);
+        }
+    }
+}
+
+public class RedactionPrecisionTests
+{
+    [Theory]
+    [InlineData("order 4242424242424241 shipped")] // fails the Luhn check: an id, not a card
+    [InlineData("ref 1234567890123")]
+    public void Digit_runs_that_are_not_card_numbers_are_kept(string input)
+    {
+        Assert.Equal(input, Redactor.Redact(input));
     }
 }

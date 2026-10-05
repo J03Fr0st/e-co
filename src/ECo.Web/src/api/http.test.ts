@@ -61,4 +61,38 @@ describe('apiFetch', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/v1/antiforgery')
     expect(sentHeaders(1).get(XSRF_HEADER)).toBe('fresh')
   })
+
+  const problem = (type: string) =>
+    new Response(JSON.stringify({ type, status: 400 }), {
+      status: 400,
+      headers: { 'content-type': 'application/problem+json' },
+    })
+
+  it('refreshes a rejected token and retries exactly once', async () => {
+    document.cookie = 'XSRF-TOKEN=stale; path=/'
+    fetchMock
+      .mockResolvedValueOnce(problem('/problems/antiforgery'))
+      .mockImplementationOnce(async () => {
+        document.cookie = 'XSRF-TOKEN=fresh; path=/'
+        return new Response(null, { status: 204 })
+      })
+      .mockResolvedValueOnce(new Response(null, { status: 201 }))
+
+    const response = await apiFetch('/api/v1/bag/lines/X', { method: 'PUT' })
+
+    expect(response.status).toBe(201)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/v1/antiforgery')
+    expect(sentHeaders(2).get(XSRF_HEADER)).toBe('fresh')
+  })
+
+  it('does not retry other bad requests', async () => {
+    document.cookie = 'XSRF-TOKEN=abc; path=/'
+    fetchMock.mockResolvedValueOnce(problem('/problems/stock-exceeded'))
+
+    const response = await apiFetch('/api/v1/bag/lines/X', { method: 'PUT' })
+
+    expect(response.status).toBe(400)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
 })

@@ -30,9 +30,13 @@ services:
       Database__MigrateOnStartup: "true"
     ports:
       - "8080:8080"
+    volumes:
+      # Data-protection keys: antiforgery (and later auth) cookies stay valid across restarts.
+      - dpkeys:/data/keys
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
   pgdata:
+  dpkeys:

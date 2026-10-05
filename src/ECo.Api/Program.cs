@@ -4,6 +4,7 @@ using ECo.Api.Infrastructure.Http;
 using ECo.Api.Infrastructure.Logging;
 using ECo.Api.Modules.Health;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -22,6 +23,13 @@ builder.Services.AddOptions<StoreOptions>()
 
 builder.Services.AddDbContext<AppDbContext>((services, options) =>
     options.UseNpgsql(services.GetRequiredService<IConfiguration>().GetConnectionString("Default")));
+
+// Antiforgery and (from S6) auth cookies are encrypted with these keys; they must survive restarts.
+var dataProtection = builder.Services.AddDataProtection().SetApplicationName("ECo");
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+{
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
 
 builder.Services.AddAntiforgery(options =>
 {
