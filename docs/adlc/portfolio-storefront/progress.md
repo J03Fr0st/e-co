@@ -12,7 +12,7 @@ plan: docs/adlc/portfolio-storefront/plan.md
 
 | Slice | State | Evidence | Updated |
 | --- | --- | --- | --- |
-| S0 | in-progress | Uncommitted on local branch `s0-walking-skeleton`. Local: Release build 0 warnings; 45 xUnit tests pass (integration excluded, no Docker); web typecheck, lint, 6 Vitest tests, build; Playwright Chromium smoke and axe pass, and fail on an injected `image-alt` violation. Independent review: approve with fixes, both P2s fixed. Not yet run: Testcontainers health test, `docker compose up`, 5-browser run, CI | 2026-10-05 |
+| S0 | implemented | [PR #1](https://github.com/J03Fr0st/e-co/pull/1). CI green at `b8ac553` (run 37312234194) and `c3eabc0` (run 37313081401): API with the Testcontainers health test, web, 10/10 Playwright tests with axe across 5 browsers, Lighthouse report, gitleaks. Gate proof: `f785dd1` (run 37312754222) failed only the end-to-end job, on `color-contrast`, then was reverted. Pre-commit review: approve with fixes, both P2s fixed. **Not yet proven:** the `docker compose up` outcome, because CI does not build the Docker image and no local Docker daemon was available | 2026-10-05 |
 | S1 | blocked | Waits for S0, CI-1, CI-2 | 2026-10-05 |
 | S2 | blocked | Waits for S0 (CI-3 is settled inside the slice) | 2026-10-05 |
 | S3 | blocked | Waits for S2, CI-4 | 2026-10-05 |
