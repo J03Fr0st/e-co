@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      dotnet: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /src/ECo.Web
+    schedule: { interval: weekly }
+    groups:
+      web: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /tests/e2e
+    schedule: { interval: weekly }
+    groups:
+      e2e: { patterns: ["*"] }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: docker
+    directory: /
+    schedule: { interval: weekly }

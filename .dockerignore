@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/node_modules/
+src/ECo.Api/wwwroot/
+tests/
+docs/
+.git/
+.github/
+**/*.user

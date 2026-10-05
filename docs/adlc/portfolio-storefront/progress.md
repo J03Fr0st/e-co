@@ -12,7 +12,7 @@ plan: docs/adlc/portfolio-storefront/plan.md
 
 | Slice | State | Evidence | Updated |
 | --- | --- | --- | --- |
-| S0 | ready | — | 2026-10-05 |
+| S0 | in-progress | Uncommitted on local branch `s0-walking-skeleton`. Local: Release build 0 warnings; 45 xUnit tests pass (integration excluded, no Docker); web typecheck, lint, 6 Vitest tests, build; Playwright Chromium smoke and axe pass, and fail on an injected `image-alt` violation. Independent review: approve with fixes, both P2s fixed. Not yet run: Testcontainers health test, `docker compose up`, 5-browser run, CI | 2026-10-05 |
 | S1 | blocked | Waits for S0, CI-1, CI-2 | 2026-10-05 |
 | S2 | blocked | Waits for S0 (CI-3 is settled inside the slice) | 2026-10-05 |
 | S3 | blocked | Waits for S2, CI-4 | 2026-10-05 |
@@ -42,4 +42,5 @@ plan: docs/adlc/portfolio-storefront/plan.md
 | CI-4 Image source and licence | spec open question | Joe | S3 | open |
 | CI-5 Stripe test-mode account, keys and webhook secret | plan | Joe | S7 | open |
 | CI-6 Walkthrough people for AC-047 and AC-048 | spec open question | Joe | S13 | open |
+| S6 auth wiring: run `UseAuthentication` before the antiforgery middleware, and re-issue `XSRF-TOKEN` after sign-in and sign-out (the token is bound to the user) | S0 review | implementer | S6 | open |
 | CI-7 Time budget (assumed: no fixed deadline, vertical slices) | intent assumption | Joe | S1 | open |
