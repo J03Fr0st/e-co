@@ -14,12 +14,12 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
     trace: 'retain-on-failure',
   },
-  // C7 browser floor: desktop engines plus mobile Safari and Chrome.
+  // C7 browser floor: desktop engines plus mobile Safari and Chrome, at the 320px shopper minimum.
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-    { name: 'mobile-webkit', use: { ...devices['iPhone 13'] } },
-    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
+    { name: 'mobile-webkit', use: { ...devices['iPhone 13'], viewport: { width: 320, height: 640 } } },
+    { name: 'mobile-chromium', use: { ...devices['Pixel 7'], viewport: { width: 320, height: 640 } } },
   ],
 })

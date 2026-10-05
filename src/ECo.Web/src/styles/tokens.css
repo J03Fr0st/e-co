@@ -1,0 +1,169 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/archivo/wdth.css';
+
+/*
+ * Long Cycle design tokens: The Launderette (CI-3, approved 2026-10-05).
+ * Palette law: each signal colour means exactly one state. Amber = low stock / in progress,
+ * red = needs action. Colour is never decoration. Grout is decorative only (1.4:1 on tile).
+ */
+@theme {
+  --color-tile: #eef3ef;
+  --color-tile-raised: #ffffff;
+  --color-panel: #f7f9f7;
+  --color-steel-panel: #dce2df;
+  --color-grout: #c9d3ce;
+  --color-steel: #55625e;
+  --color-ink: #14201d;
+  --color-enamel: #11493f;
+  --color-enamel-hover: #0b3a32;
+  --color-enamel-ink: #f3f7f4;
+  --color-amber: #e8a317;
+  --color-amber-ink: #1f1702;
+  --color-red: #b42e1a;
+  --color-red-tint: #fbece9;
+  --color-focus: #0b63ce;
+
+  --font-sans: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+
+  --radius-sticker: 4px;
+  --radius-button: 8px;
+  --radius-sign: 12px;
+
+  --shadow-panel: 0 1px 2px rgb(20 32 29 / 0.08), 0 10px 28px -14px rgb(20 32 29 / 0.3);
+  --shadow-pop: 0 2px 6px rgb(20 32 29 / 0.12), 0 24px 48px -20px rgb(20 32 29 / 0.45);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-quick: 160ms;
+  --duration-settle: 240ms;
+  --duration-drum: 900ms;
+}
+
+@layer base {
+  :root {
+    --focus-ring: var(--color-focus);
+    color-scheme: light;
+    scrollbar-color: var(--color-steel) var(--color-tile);
+    accent-color: var(--color-enamel);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-stretch: 100%;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+    caret-color: var(--color-enamel);
+    /* The launderette wall: glazed tile on a grout grid. */
+    background-color: var(--color-tile);
+    background-image:
+      linear-gradient(var(--color-grout) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-grout) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+  }
+
+  ::selection {
+    background: var(--color-enamel);
+    color: var(--color-enamel-ink);
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  .on-enamel {
+    --focus-ring: var(--color-enamel-ink);
+  }
+}
+
+@layer components {
+  /* Enamel signage: condensed caps on bottle green. */
+  /*
+   * Width is set on the variable axis directly as well as through font-stretch:
+   * WebKit mismatched glyph outlines and advances with font-stretch alone (critique P0).
+   */
+  .sign-type {
+    font-stretch: 75%;
+    font-variation-settings: 'wdth' 75;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+
+  /* Machine readouts: measured, tabular, never jittering. */
+  .readout {
+    font-stretch: 87.5%;
+    font-variation-settings: 'wdth' 87.5;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 60;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-button);
+    background: var(--color-ink);
+    color: var(--color-tile-raised);
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The signature quarter-turn: the drum settles the garment into place. */
+@keyframes drum-turn {
+  from {
+    transform: rotate(-90deg);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    /* transform, not translate: Tailwind's translate utilities position the dialog. */
+    transform: translateY(0.75rem);
+  }
+}
+
+/* Reduced motion: no travel, no timing. State changes still happen, instantly. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}

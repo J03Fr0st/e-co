@@ -89,8 +89,10 @@ jobs:
             src/ECo.Web/package-lock.json
             tests/e2e/package-lock.json
 
-      - name: Build the SPA into the API
+      - name: Build the SPA into the API (with the primitives showcase)
         working-directory: src/ECo.Web
+        env:
+          VITE_SHOWCASE: "true"
         run: npm ci && npm run build
       - run: dotnet publish src/ECo.Api/ECo.Api.csproj -c Release -o publish
       - name: Start the site
