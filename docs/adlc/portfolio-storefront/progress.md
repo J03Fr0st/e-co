@@ -31,6 +31,7 @@ plan: docs/adlc/portfolio-storefront/plan.md
 
 | Date | Slice | Decision | Approver | Evidence | Conditions |
 | --- | --- | --- | --- | --- | --- |
+| 2026-10-05 | S2 | approved: CI-3 visual identity. Brand Long Cycle; world The Launderette (direction contract, seed d4d63287); palette tile #EEF3EF, ink #14201D, steel #55625E, enamel #11493F, amber #E8A317 (fill only), red #B42E1A, focus #0B63CE, grout #C9D3CE (decorative only); typeface Archivo | Joe (owner) | `origin/s2-design-foundation` at `7479f65`: `PRODUCT.md`, `.impeccable/surfaces/src-eco-web-src-app-tsx.md` | — |
 
 ## Carried items
 
@@ -38,7 +39,7 @@ plan: docs/adlc/portfolio-storefront/plan.md
 | --- | --- | --- | --- | --- |
 | CI-1 Public domain name on Cloudflare DNS | plan | Joe | S1 | open |
 | CI-2 Cloudflare account, Unraid access, network and volume | plan | Joe | S1 | open |
-| CI-3 Visual identity (brand name, palette, type), shaped with `impeccable` | spec open question | Joe | S2 | open |
+| CI-3 Visual identity (brand name, palette, type), shaped with `impeccable` | spec open question | Joe | S2 | decided (S2 gate, 2026-10-05) |
 | CI-4 Image source and licence | spec open question | Joe | S3 | open |
 | CI-5 Stripe test-mode account, keys and webhook secret | plan | Joe | S7 | open |
 | CI-6 Walkthrough people for AC-047 and AC-048 | spec open question | Joe | S13 | open |
