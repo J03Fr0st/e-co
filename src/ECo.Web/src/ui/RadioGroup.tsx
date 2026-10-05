@@ -96,7 +96,6 @@ function Swatch({ option }: { option: RadioOption }) {
       value={option.value}
       disabled={option.unavailable}
       aria-label={option.unavailable ? `${option.label}, ${unavailable}` : option.label}
-      title={option.label}
       className={cx(
         'group grid size-11 place-items-center rounded-full border-2 border-transparent p-0.5',
         'data-[state=checked]:border-ink data-[disabled]:cursor-not-allowed',

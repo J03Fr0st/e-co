@@ -282,12 +282,12 @@ const suggestions = [
 ]
 
 function Search() {
-  const [chosen, setChosen] = useState<string>()
+  const [chosen, setChosen] = useState<{ value: string; picks: number }>()
   return (
     <Panel id="search" title="Search">
-      <Combobox label="Search the shop" placeholder="Try “tee” or “wool”" suggestions={suggestions} onSelect={setChosen} />
+      <Combobox label="Search the shop" placeholder="Try “tee” or “wool”" suggestions={suggestions} onSelect={(value) => setChosen((c) => ({ value, picks: (c?.picks ?? 0) + 1 }))} />
       <p className="mt-3 text-sm text-steel" aria-live="polite" data-testid="search-chosen">
-        {chosen ? `Chosen: ${chosen}` : 'Nothing chosen yet.'}
+        {chosen ? `Chosen: ${chosen.value} (pick ${chosen.picks})` : 'Nothing chosen yet.'}
       </p>
     </Panel>
   )

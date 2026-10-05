@@ -61,7 +61,7 @@ export function Readout({ label, value, tone = 'plain', className }: ReadoutProp
         className,
       )}
     >
-      <span className="uppercase">{label}</span>
+      <span className="uppercase">{label}</span>{' '}
       <span>{value}</span>
     </span>
   )

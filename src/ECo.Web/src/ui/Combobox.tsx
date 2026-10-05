@@ -13,10 +13,11 @@ export interface ComboboxProps {
   /** Called on every keystroke, for callers that fetch suggestions themselves. */
   onInputChange?: (value: string) => void
   filter?: boolean
+  /** Spoken and shown under the field when nothing matches; the popup stays closed. */
+  emptyText?: string
   /** Suggestions appear once this many characters are typed (AC-005: two). */
   minChars?: number
   maxSuggestions?: number
-  emptyText?: string
   className?: string
 }
 
@@ -44,11 +45,12 @@ export function Combobox({
   }, [value, suggestions, filter, minChars, maxSuggestions])
 
   const ready = value.trim().length >= minChars
+  const nothingFound = ready && matches.length === 0
 
   return (
     <Ariakit.ComboboxProvider
-      // Expanded only when a popup can actually show, so aria-expanded never claims a missing listbox.
-      open={open && ready}
+      // Expanded only when a popup with options can show: a listbox must never be empty.
+      open={open && ready && !nothingFound}
       setOpen={setOpen}
       // No enter/leave animation: closing must hide at once, never wait for an animation end.
       animated={false}
@@ -57,6 +59,8 @@ export function Combobox({
         setValue(next)
         onInputChange?.(next)
       }}
+      // Held empty so each pick is a change; otherwise choosing the same suggestion twice reports once.
+      selectedValue=""
       setSelectedValue={(selected) => {
         if (typeof selected === 'string' && selected) onSelect?.(selected)
       }}
@@ -71,6 +75,9 @@ export function Combobox({
             className="min-h-11 w-full rounded-button border border-steel bg-tile-raised pr-3 pl-10 text-base text-ink placeholder:text-steel"
           />
         </div>
+        <p aria-live="polite" className="min-h-5 text-sm text-steel">
+          {nothingFound ? emptyText : ''}
+        </p>
       </div>
       {/* Always rendered and hidden (not unmounted) when closed: Ariakit owns the lifecycle
           through `open`. Unmounting, from outside or via unmountOnHide, raced with a quick reopen
@@ -80,17 +87,13 @@ export function Combobox({
         sameWidth
         className="z-50 max-h-80 overflow-y-auto rounded-button border border-grout bg-tile-raised p-1 shadow-pop"
       >
-        {matches.length > 0 ? (
-          matches.map((match) => (
-            <Ariakit.ComboboxItem
-              key={match}
-              value={match}
-              className="flex min-h-11 cursor-default items-center rounded-sticker px-3 data-[active-item]:bg-enamel data-[active-item]:text-enamel-ink"
-            />
-          ))
-        ) : (
-          <div className="px-3 py-3 text-steel">{emptyText}</div>
-        )}
+        {matches.map((match) => (
+          <Ariakit.ComboboxItem
+            key={match}
+            value={match}
+            className="flex min-h-11 cursor-default items-center rounded-sticker px-3 data-[active-item]:bg-enamel data-[active-item]:text-enamel-ink"
+          />
+        ))}
       </Ariakit.ComboboxPopover>
     </Ariakit.ComboboxProvider>
   )

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { cx } from './cx'
 
 /*
@@ -62,6 +62,10 @@ export interface PortholeProps {
 
 /** The round glass window of a machine: a steel ring, glass glare, and the garment inside. */
 export function Porthole({ children, turnKey, className }: PortholeProps) {
+  // The turn answers an action, never the first paint: only a value that differs from the mount value plays it.
+  const [mountKey] = useState(turnKey)
+  const turning = turnKey !== undefined && turnKey !== mountKey
+
   return (
     <div
       className={cx(
@@ -74,7 +78,7 @@ export function Porthole({ children, turnKey, className }: PortholeProps) {
           key={turnKey}
           className={cx(
             'size-full',
-            turnKey !== undefined && 'motion-safe:animate-[drum-turn_var(--duration-drum)_var(--ease-out-expo)]',
+            turning && 'motion-safe:animate-[drum-turn_var(--duration-drum)_var(--ease-out-expo)]',
           )}
         >
           {children}

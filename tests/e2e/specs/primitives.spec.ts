@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect, test } from '../fixtures'
 
 /** S2 checks against the primitives showcase (built with VITE_SHOWCASE=true). */
@@ -39,6 +39,24 @@ test.describe('primitives showcase', () => {
     await expectNoA11yViolations()
   })
 
+  test('has no violations when search finds nothing', async ({ page, expectNoA11yViolations }) => {
+    const input = page.getByRole('combobox', { name: 'Search the shop' })
+    await input.fill('zzz')
+    await expect(page.getByTestId('search').getByText('No matches')).toBeVisible()
+    await expect(page.getByRole('listbox')).toBeHidden()
+    await expect(input).toHaveAttribute('aria-expanded', 'false')
+    await expectNoA11yViolations()
+  })
+
+  test('picking the same suggestion twice reports both picks', async ({ page }) => {
+    const input = page.getByRole('combobox', { name: 'Search the shop' })
+    for (const pick of [1, 2]) {
+      await input.fill('merino')
+      await page.getByRole('option', { name: 'Merino crew jumper' }).click()
+      await expect(page.getByTestId('search-chosen')).toHaveText(`Chosen: Merino crew jumper (pick ${pick})`)
+    }
+  })
+
   test('dialog traps focus and returns it to the trigger', async ({ page }) => {
     const trigger = page.getByRole('button', { name: 'Refund this order' })
     await trigger.focus()
@@ -70,7 +88,7 @@ test.describe('primitives showcase', () => {
 
     await page.keyboard.press('ArrowDown')
     await page.keyboard.press('Enter')
-    await expect(page.getByTestId('search-chosen')).toHaveText('Chosen: Pleated wool trousers')
+    await expect(page.getByTestId('search-chosen')).toHaveText('Chosen: Pleated wool trousers (pick 1)')
 
     await input.fill('wool')
     await expect(listbox).toBeVisible()
@@ -83,8 +101,7 @@ test.describe('primitives showcase', () => {
     const sizes = page.getByTestId('choices').getByRole('radiogroup', { name: 'Size' })
     await sizes.getByRole('radio', { name: 'S', exact: true }).focus()
 
-    // Held briefly like a real key press: Radix checks the item only while the arrow is down.
-    await page.keyboard.press('ArrowRight', { delay: 50 })
+    await pressArrowUntilFocused(page, sizes.getByRole('radio', { name: 'L', exact: true }))
 
     await expect(sizes.getByRole('radio', { name: 'L', exact: true })).toBeChecked()
     await expect(sizes.getByRole('radio', { name: 'M, Sold out' })).toBeDisabled()
@@ -94,17 +111,19 @@ test.describe('primitives showcase', () => {
     const dial = page.getByRole('radiogroup', { name: /^Colour/ })
     await dial.getByRole('radio', { name: 'Ink' }).focus()
 
-    await page.keyboard.press('ArrowRight', { delay: 50 })
+    await pressArrowUntilFocused(page, dial.getByRole('radio', { name: 'Oat' }))
 
     await expect(dial.getByRole('radio', { name: 'Oat' })).toBeChecked()
     await expect(dial.getByRole('radio', { name: 'Rust, Sold out' })).toBeDisabled()
     await expect(page.getByRole('img', { name: /Heavyweight crew tee in Oat/ })).toBeVisible()
   })
 
-  test('Add to bag plays the porthole quarter-turn once', async ({ page }) => {
+  test('Add to bag plays the porthole quarter-turn, and only then', async ({ page }) => {
+    const turning = page.locator('[class*="drum-turn"]')
+    await expect(turning).toHaveCount(0)
+
     await page.getByTestId('machine-panel').getByRole('button', { name: 'Add to bag' }).click()
 
-    const turning = page.locator('[class*="drum-turn"]')
     await expect(turning).toHaveCount(1)
     await expect(page.getByRole('region', { name: /Notifications/ }).getByText('Added to bag')).toBeVisible()
   })
@@ -154,6 +173,16 @@ test('the skip link is the first stop and moves focus to the main content', asyn
   await page.keyboard.press('Enter')
   await expect(page.getByRole('main')).toBeFocused()
 })
+
+/**
+ * A real key press: Radix checks the next radio only while the arrow is held when focus lands,
+ * so hold the key until focus has moved instead of tapping it instantly.
+ */
+async function pressArrowUntilFocused(page: Page, target: Locator): Promise<void> {
+  await page.keyboard.down('ArrowRight')
+  await expect(target).toBeFocused()
+  await page.keyboard.up('ArrowRight')
+}
 
 async function movingElements(page: Page): Promise<string[]> {
   return page.evaluate(() => {

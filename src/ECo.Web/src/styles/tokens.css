@@ -118,6 +118,7 @@
   }
 
   .skip-link {
+    --focus-ring: var(--color-tile-raised);
     position: absolute;
     left: 1rem;
     top: -4rem;
