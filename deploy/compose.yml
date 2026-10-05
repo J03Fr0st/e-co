@@ -1,0 +1,42 @@
+# Local run: docker compose -f deploy/compose.yml up --build
+# Serves the site at http://localhost:8080. Credentials here are for local use only.
+name: eco
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: eco
+      POSTGRES_USER: eco
+      POSTGRES_PASSWORD: eco
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eco -d eco"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      # Local only: lets `dotnet run` (appsettings.Development.json) reach the database.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=eco;Username=eco;Password=eco
+      Database__MigrateOnStartup: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      # Data-protection keys: antiforgery (and later auth) cookies stay valid across restarts.
+      - dpkeys:/data/keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  dpkeys:

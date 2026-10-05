@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  api:
+    name: API build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - run: dotnet restore ECo.slnx
+      - run: dotnet build ECo.slnx --no-restore -c Release
+      # Integration tests start PostgreSQL 17 through Testcontainers on the runner's Docker.
+      - run: dotnet test ECo.slnx --no-build -c Release --logger "trx" --results-directory TestResults
+      - name: Fail on vulnerable NuGet packages
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet list ECo.slnx package --vulnerable --include-transitive | tee vulnerable.txt
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then exit 1; fi
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: TestResults
+
+  web:
+    name: Web type-check, lint, tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/ECo.Web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/ECo.Web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm audit --audit-level=high
+      - run: npm run build
+
+  e2e:
+    name: End-to-end, accessibility and Lighthouse
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: eco
+          POSTGRES_USER: eco
+          POSTGRES_PASSWORD: eco
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U eco -d eco"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      E2E_BASE_URL: http://127.0.0.1:8080
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            src/ECo.Web/package-lock.json
+            tests/e2e/package-lock.json
+
+      - name: Build the SPA into the API
+        working-directory: src/ECo.Web
+        run: npm ci && npm run build
+      - run: dotnet publish src/ECo.Api/ECo.Api.csproj -c Release -o publish
+      - name: Start the site
+        env:
+          ASPNETCORE_ENVIRONMENT: Production
+          ASPNETCORE_URLS: http://127.0.0.1:8080
+          ConnectionStrings__Default: Host=127.0.0.1;Port=5432;Database=eco;Username=eco;Password=eco
+          Database__MigrateOnStartup: "true"
+        # Start from the publish folder: the content root (and so wwwroot) is the working directory.
+        working-directory: publish
+        run: |
+          nohup dotnet ECo.Api.dll > ../site.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf "$E2E_BASE_URL/api/v1/health" && exit 0
+            sleep 1
+          done
+          cat ../site.log; exit 1
+
+      - name: Install Playwright
+        working-directory: tests/e2e
+        run: npm ci && npx playwright install --with-deps
+      - name: Type-check and audit e2e
+        working-directory: tests/e2e
+        run: npm run typecheck && npm audit --audit-level=high
+      - name: Playwright smoke and axe gate
+        working-directory: tests/e2e
+        run: npx playwright test
+
+      - name: Lighthouse (report only, AC-050)
+        continue-on-error: true
+        run: npx --yes @lhci/cli@0.15.1 autorun
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-reports
+          path: |
+            tests/e2e/playwright-report
+            lhci-report
+            site.log
+          if-no-files-found: ignore
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

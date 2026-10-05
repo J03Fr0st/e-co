@@ -1,0 +1,17 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["http://127.0.0.1:8080/"],
+      "numberOfRuns": 3,
+      "settings": { "preset": "perf", "formFactor": "mobile", "screenEmulation": { "mobile": true } }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 200 }]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": "lhci-report" }
+  }
+}
