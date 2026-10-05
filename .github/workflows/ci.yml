@@ -99,13 +99,15 @@ jobs:
           ASPNETCORE_URLS: http://127.0.0.1:8080
           ConnectionStrings__Default: Host=127.0.0.1;Port=5432;Database=eco;Username=eco;Password=eco
           Database__MigrateOnStartup: "true"
+        # Start from the publish folder: the content root (and so wwwroot) is the working directory.
+        working-directory: publish
         run: |
-          nohup dotnet publish/ECo.Api.dll > site.log 2>&1 &
+          nohup dotnet ECo.Api.dll > ../site.log 2>&1 &
           for i in $(seq 1 60); do
             curl -sf "$E2E_BASE_URL/api/v1/health" && exit 0
             sleep 1
           done
-          cat site.log; exit 1
+          cat ../site.log; exit 1
 
       - name: Install Playwright
         working-directory: tests/e2e
