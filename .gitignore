@@ -27,3 +27,5 @@ Thumbs.db
 
 # impeccable decision-page session state (transient)
 .impeccable/questions/
+# impeccable review captures (regenerable evidence)
+.impeccable/review/
