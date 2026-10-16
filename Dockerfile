@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # 1. Build the React app into the API's wwwroot (PD-02: same origin).
-FROM node:24-bookworm-slim AS web
+FROM node:26-bookworm-slim AS web
 WORKDIR /src/src/ECo.Web
 COPY src/ECo.Web/package.json src/ECo.Web/package-lock.json ./
 RUN npm ci
