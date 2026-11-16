@@ -9,7 +9,7 @@ COPY src/ECo.Web/ ./
 RUN npm run build
 
 # 2. Publish the API with the built SPA inside it.
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS api
 WORKDIR /src
 COPY global.json nuget.config Directory.Build.props ./
 COPY src/ECo.Api/ECo.Api.csproj src/ECo.Api/
