@@ -19,7 +19,7 @@ COPY --from=web /src/src/ECo.Api/wwwroot src/ECo.Api/wwwroot
 RUN dotnet publish src/ECo.Api/ECo.Api.csproj -c Release -o /app --no-restore
 
 # 3. Runtime image. The default (non-Alpine) image ships ICU, so Store:Locale cultures resolve.
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 # The base image already listens on 8080 (ASPNETCORE_HTTP_PORTS).
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
